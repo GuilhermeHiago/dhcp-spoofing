@@ -2,21 +2,21 @@
 #define ETHER_TYPE  0x0800
 #define DEFAULT_IF  "eth0"
  
-// ==== dhcp var
-#define DHCP_UDP_OVERHEAD   (20 + /* IP header */           \
-                   8)   /* UDP header */
-#define DHCP_SNAME_LEN      64
-#define DHCP_FILE_LEN       128
-#define DHCP_FIXED_NON_UDP  236
-#define DHCP_FIXED_LEN      (DHCP_FIXED_NON_UDP + DHCP_UDP_OVERHEAD)
-                       /* Everything but options. */
-#define BOOTP_MIN_LEN       300
+// ==== dhcp var do modelo 2
+// #define DHCP_UDP_OVERHEAD   (20 + /* IP header */           \
+//                    8)   /* UDP header */
+// #define DHCP_SNAME_LEN      64
+// #define DHCP_FILE_LEN       128
+// #define DHCP_FIXED_NON_UDP  236
+// #define DHCP_FIXED_LEN      (DHCP_FIXED_NON_UDP + DHCP_UDP_OVERHEAD)
+//                        /* Everything but options. */
+// #define BOOTP_MIN_LEN       300
  
-#define DHCP_MTU_MAX        1500
-#define DHCP_MTU_MIN            576
+// #define DHCP_MTU_MAX        1500
+// #define DHCP_MTU_MIN            576
  
-#define DHCP_MAX_OPTION_LEN (DHCP_MTU_MAX - DHCP_FIXED_LEN)
-#define DHCP_MIN_OPTION_LEN     (DHCP_MTU_MIN - DHCP_FIXED_LEN)
+// #define DHCP_MAX_OPTION_LEN (DHCP_MTU_MAX - DHCP_FIXED_LEN)
+// #define DHCP_MIN_OPTION_LEN     (DHCP_MTU_MIN - DHCP_FIXED_LEN)
  
  
 struct eth_hdr_s {
