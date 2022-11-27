@@ -2,21 +2,21 @@
 #define ETHER_TYPE  0x0800
 #define DEFAULT_IF  "eth0"
  
-// ==== dhcp var do modelo 2
-// #define DHCP_UDP_OVERHEAD   (20 + /* IP header */           \
-//                    8)   /* UDP header */
-// #define DHCP_SNAME_LEN      64
-// #define DHCP_FILE_LEN       128
-// #define DHCP_FIXED_NON_UDP  236
-// #define DHCP_FIXED_LEN      (DHCP_FIXED_NON_UDP + DHCP_UDP_OVERHEAD)
-//                        /* Everything but options. */
-// #define BOOTP_MIN_LEN       300
+// ==== dhcp var
+#define DHCP_UDP_OVERHEAD   (20 + /* IP header */       	\
+               	8)   /* UDP header */
+#define DHCP_SNAME_LEN  	64
+#define DHCP_FILE_LEN   	128
+#define DHCP_FIXED_NON_UDP  236
+#define DHCP_FIXED_LEN  	(DHCP_FIXED_NON_UDP + DHCP_UDP_OVERHEAD)
+                   	/* Everything but options. */
+#define BOOTP_MIN_LEN   	300
  
-// #define DHCP_MTU_MAX        1500
-// #define DHCP_MTU_MIN            576
+#define DHCP_MTU_MAX    	1500
+#define DHCP_MTU_MIN        	576
  
-// #define DHCP_MAX_OPTION_LEN (DHCP_MTU_MAX - DHCP_FIXED_LEN)
-// #define DHCP_MIN_OPTION_LEN     (DHCP_MTU_MIN - DHCP_FIXED_LEN)
+#define DHCP_MAX_OPTION_LEN (DHCP_MTU_MAX - DHCP_FIXED_LEN)
+#define DHCP_MIN_OPTION_LEN 	(DHCP_MTU_MIN - DHCP_FIXED_LEN)
  
  
 struct eth_hdr_s {
@@ -26,16 +26,16 @@ struct eth_hdr_s {
 };
  
 struct ip_hdr_s {
-   uint8_t ver;            /* version, header length */
-   uint8_t tos;            /* type of service */
-   int16_t len;            /* total length */
-   uint16_t id;            /* identification */
-   int16_t off;            /* fragment offset field */
-   uint8_t ttl;            /* time to live */
-   uint8_t proto;          /* protocol */
-   uint16_t sum;           /* checksum */
-   uint8_t src[4];         /* source address */
-   uint8_t dst[4];         /* destination address */
+   uint8_t ver;        	/* version, header length */
+   uint8_t tos;        	/* type of service */
+   int16_t len;        	/* total length */
+   uint16_t id;        	/* identification */
+   int16_t off;        	/* fragment offset field */
+   uint8_t ttl;        	/* time to live */
+   uint8_t proto;      	/* protocol */
+   uint16_t sum;       	/* checksum */
+   uint8_t src[4];     	/* source address */
+   uint8_t dst[4];     	/* destination address */
 };
  
 struct udp_hdr_s {
@@ -46,11 +46,12 @@ struct udp_hdr_s {
 };
  
 struct dhcp_hdr_s {
-     uint8_t htype;   // hardware address type
-   uint8_t hlen;    // hardware address length
-   uint8_t hops;    // incremented by relay agents
+   uint8_t op;  	// message op code, message type
+   uint8_t htype;   // hardware address type
+   uint8_t hlen;	// hardware address length
+   uint8_t hops;	// incremented by relay agents
  
-   uint32_t xid;    // transaction ID
+   uint32_t xid;	// transaction ID
  
    uint16_t secs;   // seconds since address acquisition or renewal
    uint16_t flags;  // flags
@@ -71,26 +72,26 @@ struct dhcp_hdr_s {
  
    uint8_t file[128]; // boot file name
  
-   uint8_t options[312]; // optional parameters field
-   
-   // OUTRA FORMA DE DECLARAR
-   // u_int8_t  op;      /* 0: Message opcode/type */
-   // u_int8_t  htype;    /* 1: Hardware addr type (net/if_types.h) */
-   // u_int8_t  hlen;     /* 2: Hardware addr length */
-   // u_int8_t  hops;     /* 3: Number of relay agent hops from client */
-   // u_int32_t xid;      /* 4: Transaction ID */
-   // u_int16_t secs;     /* 8: Seconds since client started looking */
-   // u_int16_t flags;    /* 10: Flag bits */
-   // struct in_addr ciaddr;  /* 12: Client IP address (if already in use) */
-   // struct in_addr yiaddr;  /* 16: Client IP address */
-   // struct in_addr siaddr;  /* 18: IP address of next server to talk to */
-   // struct in_addr giaddr;  /* 20: DHCP relay agent IP address */
-   // unsigned char chaddr [16];  /* 24: Client hardware address */
-   // char sname [DHCP_SNAME_LEN];    /* 40: Server name */
-   // char file [DHCP_FILE_LEN];  /* 104: Boot filename */
-   // unsigned char options [DHCP_MAX_OPTION_LEN];
-   //             /* 212: Optional parameters
-   //           (actual length dependent on MTU). */
+   uint8_t options[212]; // optional parameters field
+ 
+///
+   //u_int8_t  op;  	/* 0: Message opcode/type */
+   //u_int8_t  htype;	/* 1: Hardware addr type (net/if_types.h) */
+   //u_int8_t  hlen; 	/* 2: Hardware addr length */
+   //u_int8_t  hops; 	/* 3: Number of relay agent hops from client */
+   //u_int32_t xid;  	/* 4: Transaction ID */
+   //u_int16_t secs; 	/* 8: Seconds since client started looking */
+   //u_int16_t flags;	/* 10: Flag bits */
+   //struct in_addr ciaddr;  /* 12: Client IP address (if already in use) */
+   //struct in_addr yiaddr;  /* 16: Client IP address */
+   //struct in_addr siaddr;  /* 18: IP address of next server to talk to */
+   //struct in_addr giaddr;  /* 20: DHCP relay agent IP address */
+   //unsigned char chaddr [16];  /* 24: Client hardware address */
+   //char sname [DHCP_SNAME_LEN];	/* 40: Server name */
+   //char file [DHCP_FILE_LEN];  /* 104: Boot filename */
+   //unsigned char options [DHCP_MAX_OPTION_LEN];
+           	/* 212: Optional parameters
+         	(actual length dependent on MTU). */
 };
  
 struct eth_frame_s {
@@ -99,6 +100,3 @@ struct eth_frame_s {
    struct udp_hdr_s udp;
    struct dhcp_hdr_s dhcp;
 };
- 
- 
-
