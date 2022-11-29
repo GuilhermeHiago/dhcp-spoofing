@@ -35,7 +35,10 @@ char spoofing_ip[13] = "192.0.2.1"; // ((in_addr_t)0x010200c0);
 
 unsigned char client_hardware_address[MAX_DHCP_CHADDR_LENGTH]="";
 unsigned int my_client_mac[MAX_DHCP_CHADDR_LENGTH];
+int mymac = 0;
  
+// mac on vm: 080027424683
+
 int main(int argc, char *argv[])
 {
 	//  getip(this_address);
@@ -169,12 +172,12 @@ int get_hardware_address(int sock, char *interface_name){
         memcpy(&client_hardware_address[0],&ifr.ifr_hwaddr.sa_data,6);
     }
 
-    if (verbose) { 
-        printf("Hardware address: ");
-        for (i=0; i<6; ++i)
-            printf("%2.2x", client_hardware_address[i]);
-        printf( "\n");
-    }
+    // if (1) { 
+    //     printf("Hardware address: ");
+    //     for (i=0; i<6; ++i)
+    //         printf("%2.2x", client_hardware_address[i]);
+    //     printf( "\n");
+    // }
 
     return OK;
 }
