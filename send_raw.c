@@ -115,8 +115,8 @@ int main(int argc, char *argv[])
 
     /* our hardware address */
     // memcpy(dhcp->chaddr, client_hardware_address, ETHERNET_HARDWARE_ADDRESS_LENGTH);
-	// send_dhcp_offer(dhcp);
-	send_dhcp_ack(dhcp);
+	send_dhcp_offer(dhcp);
+	// send_dhcp_ack(dhcp);
 
 	/* fill dhcp --offer */
 //	raw->dhcp.op = 6; // ta salvando em hlen (hardware address len)
