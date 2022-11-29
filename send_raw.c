@@ -113,9 +113,39 @@ int main(int argc, char *argv[])
 	raw->udp.udp_len = htons(sizeof(struct dhcp_hdr_s));
 	raw->udp.udp_chksum = htons(0);
 
-	/* clear the packet data structure */
-    // bzero(&raw->dhcp, sizeof(struct dhcp_hdr_s));
+    /* our hardware address */
+    // memcpy(dhcp->chaddr, client_hardware_address, ETHERNET_HARDWARE_ADDRESS_LENGTH);
+	// send_dhcp_offer(dhcp);
+	send_dhcp_ack(dhcp);
 
+	/* fill dhcp --offer */
+//	raw->dhcp.op = 6; // ta salvando em hlen (hardware address len)
+//	((int *)raw)[sizeof(struct eth_hdr_s)+sizeof(struct ip_hdr_s)+sizeof(struct udp_hdr_s)+1] = 6;
+	// usar p/ uint8 -> uint32 v4[0] | (v4[1] << 8) | (v4[2] << 16) | (v4[3] << 24);
+	//  raw->dhcp.htype = 0x05; // ta alterando o hops
+	//  raw->dhcp.hlen = 20; // alterando 1 dos numeros de transaction ID
+	//  raw->dhcp.hops = 0;
+	//  raw->dhcp.xid = htonl(0x49ee5a54); // aleatorio mas sempre igual em 1 transaçao - salvando os 4 mais significativos no 4 menos significativos
+	//   raw->dhcp.secs = htons(3); // ta salvando em flag
+	//  raw->dhcp.flags = htons(0x0);
+	//  raw->dhcp.options[1] = 4;
+	//  memcpy(raw->dhcp.ciaddr, client_init_address, 4);
+	//  memcpy(raw->dhcp.yiaddr, client_init_address, 4);
+	//  memcpy(raw->dhcp.giaddr, client_init_address, 4);
+	//  memcpy(raw->dhcp.chaddr, dst_mac, 6);
+	//raw->dhcp.options[0] = 255;
+
+	/* Send it.. */
+	memcpy(socket_address.sll_addr, dst_mac, 6);
+	
+	if (sendto(sockfd, raw_buffer, sizeof(struct eth_hdr_s) + sizeof(struct ip_hdr_s) + sizeof(struct udp_hdr_s) + sizeof(struct dhcp_hdr_s), 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0)
+		printf("Send failed\n");
+
+	return 0;
+}
+ 
+
+void send_dhcp_offer(struct dhcp_hdr_s *dhcp){
 	dhcp->op = 6;
 	dhcp->htype = 0x05;
 
@@ -243,37 +273,147 @@ int main(int argc, char *argv[])
 
     // fill end
     dhcp->options[255] = 255;
+}
+
+
+
+void send_dhcp_ack(struct dhcp_hdr_s *dhcp){
+/* boot request flag (backward compatible with BOOTP servers) */
+    dhcp->op=BOOTREPLY;
+
+    /* hardware address type */
+    dhcp->htype=ETHERNET_HARDWARE_ADDRESS;
+
+    /* length of our hardware address */
+    dhcp->hlen=ETHERNET_HARDWARE_ADDRESS_LENGTH;
+
+    dhcp->hops=0;
+
+    /* shold get the xid from CLIENT DISCOVER */
+    packet_xid=123;
+    dhcp->xid=htonl(packet_xid);
+
+    /**** WHAT THE HECK IS UP WITH THIS?!?  IF I DON'T MAKE THIS CALL, ONLY ONE SERVER RESPONSE IS PROCESSED!!!! ****/
+    /* downright bizzarre... */
+    ntohl(dhcp->xid);
+
+    /*dhcp->secs=htons(65535);*/
+    dhcp->secs=0xFF;
+
+    /* tell server it should broadcast its response */ 
+    dhcp->flags=htons(DHCP_UNICAST_FLAG);
+
+    /* Set client address*/
+    inet_aton("0.0.0.0", &dhcp->ciaddr);
+
+    /* Set sender (server) address*/
+    inet_aton(this_ip, &dhcp->yiaddr);
+
+    struct sockaddr_in sa;
+    char buffer[INET_ADDRSTRLEN];
+    inet_ntop( AF_INET, &dhcp->yiaddr, buffer, sizeof( buffer ));
+
+    /* Set next server address*/
+    inet_aton("0.0.0.0", &dhcp->siaddr);
+
+    /* Set relay agent address*/
+    inet_aton("0.0.0.0", &dhcp->giaddr);
 
     /* our hardware address */
     // memcpy(dhcp->chaddr, client_hardware_address, ETHERNET_HARDWARE_ADDRESS_LENGTH);
 
+    /* first four bytes of options field is magic cookie (as per RFC 2132) */
+    dhcp->options[0]='\x63';
+    dhcp->options[1]='\x82';
+    dhcp->options[2]='\x53';
+    dhcp->options[3]='\x63';
 
-	/* fill dhcp --offer */
-//	raw->dhcp.op = 6; // ta salvando em hlen (hardware address len)
-//	((int *)raw)[sizeof(struct eth_hdr_s)+sizeof(struct ip_hdr_s)+sizeof(struct udp_hdr_s)+1] = 6;
-	// usar p/ uint8 -> uint32 v4[0] | (v4[1] << 8) | (v4[2] << 16) | (v4[3] << 24);
-	//  raw->dhcp.htype = 0x05; // ta alterando o hops
-	//  raw->dhcp.hlen = 20; // alterando 1 dos numeros de transaction ID
-	//  raw->dhcp.hops = 0;
-	//  raw->dhcp.xid = htonl(0x49ee5a54); // aleatorio mas sempre igual em 1 transaçao - salvando os 4 mais significativos no 4 menos significativos
-	//   raw->dhcp.secs = htons(3); // ta salvando em flag
-	//  raw->dhcp.flags = htons(0x0);
-	//  raw->dhcp.options[1] = 4;
-	//  memcpy(raw->dhcp.ciaddr, client_init_address, 4);
-	//  memcpy(raw->dhcp.yiaddr, client_init_address, 4);
-	//  memcpy(raw->dhcp.giaddr, client_init_address, 4);
-	//  memcpy(raw->dhcp.chaddr, dst_mac, 6);
-	//raw->dhcp.options[0] = 255;
+    /* DHCP message type is embedded in options field */
+    dhcp->options[4]=DHCP_OPTION_MESSAGE_TYPE;    /* DHCP message type option identifier */
+    dhcp->options[5]='\x01';               /* DHCP message option length in bytes */
+    dhcp->options[6]=DHCPACK;
 
-	/* Send it.. */
-	memcpy(socket_address.sll_addr, dst_mac, 6);
-	
-	if (sendto(sockfd, raw_buffer, sizeof(struct eth_hdr_s) + sizeof(struct ip_hdr_s) + sizeof(struct udp_hdr_s) + sizeof(struct dhcp_hdr_s), 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0)
-		printf("Send failed\n");
+    struct in_addr *server_ip = malloc(sizeof (struct in_addr));
+    inet_aton(this_ip, server_ip);
 
-	return 0;
+    // fill dhcp renewal time (58)
+    dhcp->options[7]  = 58; 
+    dhcp->options[8]  = 4; 
+    dhcp->options[9]  = 0; 
+    dhcp->options[10] = 1; 
+    dhcp->options[11] = 56; 
+    dhcp->options[12] = 128; 
+
+    // fill dhcp rebinding time (59)
+    dhcp->options[13] = 59;
+    dhcp->options[14] = 4;
+    dhcp->options[15] = 0;
+    dhcp->options[16] = 1;
+    dhcp->options[17] = 56;
+    dhcp->options[18] = 128;
+
+    // fill dhcp lease time (51)
+    dhcp->options[19] = 51;
+    dhcp->options[20] = 4;
+    dhcp->options[21] = 0;
+    dhcp->options[22] = 1;
+    dhcp->options[23] = 56;
+    dhcp->options[24] = 128;
+    
+    // fill dhcp server identifier (54)
+    dhcp->options[25] = 54;
+    dhcp->options[26] = 4;
+    dhcp->options[27] = server_ip->s_addr; 
+    dhcp->options[28] = server_ip->s_addr >> 8;
+    dhcp->options[29] = server_ip->s_addr >> 16;
+    dhcp->options[30] = server_ip->s_addr >> 24;
+
+    // fill dhcp subnet mask (1)
+    dhcp->options[31] = 1;
+    dhcp->options[32] = 4;
+    dhcp->options[33] = this_subnet_mask[0];
+    dhcp->options[34] = this_subnet_mask[1];
+    dhcp->options[35] = this_subnet_mask[2];
+    dhcp->options[36] = this_subnet_mask[3];
+     
+    // fill dhcp router
+    dhcp->options[37] = 3;
+    dhcp->options[38] = 4;
+    dhcp->options[39] = server_ip->s_addr;
+    dhcp->options[40] = server_ip->s_addr >> 8;
+    dhcp->options[41] = server_ip->s_addr >> 16;
+    dhcp->options[42] = server_ip->s_addr >> 24;
+
+    // fill dhcp dns
+    // se usar size ([32]) como 8 da para enviar 2 dns servers
+    dhcp->options[43] = 6;
+    dhcp->options[44] = 4;
+    dhcp->options[45] = server_ip->s_addr;
+    dhcp->options[46] = server_ip->s_addr >> 8;
+    dhcp->options[47] = server_ip->s_addr >> 16;
+    dhcp->options[48] = server_ip->s_addr >> 24;
+
+    // fill dhcp broadcast
+    dhcp->options[49] = 28;
+    dhcp->options[50] = 4;
+    dhcp->options[51] = 255;
+    dhcp->options[52] = 255;
+    dhcp->options[53] = 255;
+    dhcp->options[54] = 255;
+
+    // fill end
+    dhcp->options[255] = 255;
+
+    /* the IP address we're requesting */
+    // if(request_specific_address==TRUE){
+    //     dhcp->options[7]=DHCP_OPTION_REQUESTED_ADDRESS;
+    //     dhcp->options[8]='\x04';
+    //     memcpy(&dhcp->options[9],&requested_address,sizeof(requested_address));
+    // }
 }
- 
+
+
+
 void *getip(char address[4]){
 	FILE *f;
 	char line[100] , *p , *c;
