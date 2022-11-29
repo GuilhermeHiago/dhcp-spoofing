@@ -18,6 +18,9 @@
 #include<unistd.h>
  
 void *getip(char host[4]);
+int get_hardware_address(int sock, char *interface_name);
+void send_dhcp_offer(struct dhcp_hdr_s *dhcp)
+void send_dhcp_ack(struct dhcp_hdr_s *dhcp);
 
 u_int32_t packet_xid=0;
  
