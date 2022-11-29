@@ -32,6 +32,8 @@ uint8_t this_address[4] = {192, 0, 2, 1};
 uint8_t this_subnet_mask[4] = {255, 255, 255, 0};
 char this_ip[13] = "10.130.243.63";
 char spoofing_ip[13] = "192.0.2.1"; // ((in_addr_t)0x010200c0);
+
+unsigned char client_hardware_address[MAX_DHCP_CHADDR_LENGTH]="";
  
 int main(int argc, char *argv[])
 {
@@ -85,6 +87,9 @@ int main(int argc, char *argv[])
 
 	memcpy(this_mac, if_mac.ifr_hwaddr.sa_data, 6);
 
+    get_hardware_address(sockfd, ifName);
+    printf("mac: %s", client_hardware_address);
+
 	/* End of configuration. Now we can send data using raw sockets. */
 	/* To send data (in this case we will cook an ARP packet and broadcast it =])... */
 	/* fill the Ethernet frame header */
@@ -118,23 +123,6 @@ int main(int argc, char *argv[])
 	send_dhcp_offer(dhcp);
 	// send_dhcp_ack(dhcp);
 
-	/* fill dhcp --offer */
-//	raw->dhcp.op = 6; // ta salvando em hlen (hardware address len)
-//	((int *)raw)[sizeof(struct eth_hdr_s)+sizeof(struct ip_hdr_s)+sizeof(struct udp_hdr_s)+1] = 6;
-	// usar p/ uint8 -> uint32 v4[0] | (v4[1] << 8) | (v4[2] << 16) | (v4[3] << 24);
-	//  raw->dhcp.htype = 0x05; // ta alterando o hops
-	//  raw->dhcp.hlen = 20; // alterando 1 dos numeros de transaction ID
-	//  raw->dhcp.hops = 0;
-	//  raw->dhcp.xid = htonl(0x49ee5a54); // aleatorio mas sempre igual em 1 transaçao - salvando os 4 mais significativos no 4 menos significativos
-	//   raw->dhcp.secs = htons(3); // ta salvando em flag
-	//  raw->dhcp.flags = htons(0x0);
-	//  raw->dhcp.options[1] = 4;
-	//  memcpy(raw->dhcp.ciaddr, client_init_address, 4);
-	//  memcpy(raw->dhcp.yiaddr, client_init_address, 4);
-	//  memcpy(raw->dhcp.giaddr, client_init_address, 4);
-	//  memcpy(raw->dhcp.chaddr, dst_mac, 6);
-	//raw->dhcp.options[0] = 255;
-
 	/* Send it.. */
 	memcpy(socket_address.sll_addr, dst_mac, 6);
 	
@@ -144,6 +132,52 @@ int main(int argc, char *argv[])
 	return 0;
 }
  
+
+/* determines hardware address on client machine */
+int get_hardware_address(int sock, char *interface_name){
+
+    int i;
+    struct ifreq ifr;
+
+    strncpy((char *)&ifr.ifr_name,interface_name,sizeof(ifr.ifr_name));
+    
+    // Added code to try to set local MAC address just to be through
+    // If this fails the test will still work since
+    // we do encode the MAC as part of the DHCP frame - tests show it works
+    if(mymac)
+    { 
+        int i;
+        
+        for(i=0;i<MAX_DHCP_CHADDR_LENGTH;++i)
+            client_hardware_address[i] = my_client_mac[i];
+        
+        memcpy(&ifr.ifr_hwaddr.sa_data,&client_hardware_address[0],6);
+        
+        if(ioctl(sock,SIOCSIFHWADDR,&ifr)<0){
+            printf("Error: Could not set hardware address of interface '%s'\n",interface_name);
+        }
+
+    }
+    else
+    {
+        /* try and grab hardware address of requested interface */
+        if(ioctl(sock,SIOCGIFHWADDR,&ifr)<0){
+            printf("Error: Could not get hardware address of interface '%s'\n",interface_name);
+            exit(STATE_UNKNOWN);
+            }
+        memcpy(&client_hardware_address[0],&ifr.ifr_hwaddr.sa_data,6);
+    }
+
+    if (verbose) { 
+        printf("Hardware address: ");
+        for (i=0; i<6; ++i)
+            printf("%2.2x", client_hardware_address[i]);
+        printf( "\n");
+    }
+
+    return OK;
+}
+
 
 void send_dhcp_offer(struct dhcp_hdr_s *dhcp){
 	dhcp->op = 6;
@@ -472,6 +506,3 @@ void *getip(char address[4]){
 	}
 	freeifaddrs(ifaddr);
 }
-
- 
-
