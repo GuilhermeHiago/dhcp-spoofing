@@ -34,6 +34,7 @@ char this_ip[13] = "10.130.243.63";
 char spoofing_ip[13] = "192.0.2.1"; // ((in_addr_t)0x010200c0);
 
 unsigned char client_hardware_address[MAX_DHCP_CHADDR_LENGTH]="";
+unsigned int my_client_mac[MAX_DHCP_CHADDR_LENGTH];
  
 int main(int argc, char *argv[])
 {
