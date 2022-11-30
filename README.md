@@ -7,5 +7,5 @@ TODO
     - [X] Enviar pacote DHCP - Valores não estão salvando na posição correta VERIFICAR MONTAGEM DO PACOTE.
     - [ ] Enviar pacote DHCP - o xid deve ser o mesmo do recebido.
 
-- [ ] Recever pacotes DHCP.
-    - [ ] Receber e filtrar apenas pacotes DHCP (discover e request).
+- [X] Recever pacotes DHCP.
+    - [X] Receber e filtrar apenas pacotes DHCP (discover e request).
