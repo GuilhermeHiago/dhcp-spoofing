@@ -100,8 +100,12 @@ void receive_dhcp_packet(int dhcp_message_type, struct eth_frame_s *sockfd, uint
             if (raw->ip.proto == 17){
                 unsigned int port_dest = (unsigned int) ntohs(raw->udp.dst_port);
             
-                // filter packets by port and message type
-                if((port_dest == 67 || port_dest == 68) && dhcp->options[6] == dhcp_message_type) {
+                // filter packets by port
+                if(port_dest == 67 || port_dest == 68) {
+
+                    // jump packets unlike the dhcp_message_type
+                    if(dhcp->options[6] != dhcp_message_type){continue;}
+
                     struct dhcp_hdr_s *dhcp = (struct dhcp_hdr_s *)&raw_buffer[sizeof(struct eth_hdr_s)+sizeof(struct ip_hdr_s)+sizeof(struct udp_hdr_s)];
 
                     if(dhcp->op == 1)printf("eh DHCP request\n");
