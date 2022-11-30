@@ -80,7 +80,14 @@ void receive_dhcp_packet(int dhcp_message_type, struct eth_frame_s *sockfd, uint
 
                     // printf("mac origem: %d:%d:%d:%d:%d:%d\n", raw->ethernet.src_addr[0], raw->ethernet.src_addr[1],raw->ethernet.src_addr[2],raw->ethernet.src_addr[3], raw->ethernet.src_addr[4], raw->ethernet.src_addr[5]);
                     unsigned char temp_address[MAX_DHCP_CHADDR_LENGTH]="";
-                    printf("mac origem: %.6s", dhcp->chaddr);
+                    // printf("mac origem: %.6s\n", dhcp->chaddr);
+
+                    if (1) { 
+                        printf("Hardware address: ");
+                        for (i=0; i<6; ++i)
+                            printf("%2.2x", dhcp->chaddr[i]);
+                        printf( "\n");
+                    }
 
                     printf("IP packet, %d bytes - src ip: %d.%d.%d.%d dst ip: %d.%d.%d.%d proto: %d\n",
                         numbytes,
