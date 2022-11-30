@@ -53,7 +53,6 @@ int main(int argc, char *argv[])
     getifaddrs(&id);
 
     printf("Network Address of %s :- %d\n",id->ifa_name,id->ifa_addr);
-    printf("IP: %d", inet_ntoa(id));
     /////////////////////////////////////////////////////
     //// INIT SENDER SOCKET
     /////////////////////////////////////////////////////
