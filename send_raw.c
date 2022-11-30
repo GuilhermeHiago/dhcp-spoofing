@@ -34,11 +34,11 @@ char src_mac[6] =   {0x00, 0x00, 0x00, 0x33, 0x33, 0x33};
  
 uint8_t broadcast_address[4] = {255, 255, 255, 255};
 uint8_t client_init_address[4] = {0, 0, 0, 0};
-uint8_t client_spoofing_address[4] = {10, 0, 2, 102};
-uint8_t this_address[4] = {10, 0, 2, 15};//{192, 0, 2, 1};
+uint8_t client_spoofing_address[4] = {10, 32, 143, 150};
+uint8_t this_address[4] = {10, 32, 143, 130};//{192, 0, 2, 1};
 uint8_t this_subnet_mask[4] = {255, 255, 255, 0};
-char this_ip[13] = "10.0.2.102";
-char spoofing_ip[13] = "10.0.2.15";//"192.0.2.70"; // ((in_addr_t)0x010200c0);
+char this_ip[13] = "10.32.143.130";
+char spoofing_ip[13] = "10.32.143.150";//"10.0.2.15";//"192.0.2.70"; // ((in_addr_t)0x010200c0);
 
 uint32_t client_xid;
 unsigned char client_hardware_address[MAX_DHCP_CHADDR_LENGTH]="";
@@ -140,7 +140,7 @@ int main(int argc, char *argv[])
 	raw->ip.off = htons(0x00);
 	raw->ip.ttl = 255;
 	raw->ip.proto = 17;
-	raw->ip.sum = htons(0x0000);
+	raw->ip.sum = htons(0x8654);//(0x0000);
 	memcpy(raw->ip.src, this_address, 4);
 	memcpy(raw->ip.dst, client_spoofing_address, 4);//client_init_address, 4);
 
@@ -287,7 +287,7 @@ void send_dhcp_offer(struct dhcp_hdr_s *dhcp){
     inet_aton("0.0.0.0", &dhcp->ciaddr);
 
     /* Set sender (server) address*/
-    inet_aton(this_ip, &dhcp->yiaddr);
+    inet_aton(spoofing_ip, &dhcp->yiaddr);
 
     struct sockaddr_in sa;
     char buffer[INET_ADDRSTRLEN];
@@ -418,7 +418,7 @@ void send_dhcp_ack(struct dhcp_hdr_s *dhcp){
     inet_aton("0.0.0.0", &dhcp->ciaddr);
 
     /* Set sender (server) address*/
-    inet_aton(this_ip, &dhcp->yiaddr);
+    inet_aton(spoofing_ip, &dhcp->yiaddr);
 
     struct sockaddr_in sa;
     char buffer[INET_ADDRSTRLEN];
