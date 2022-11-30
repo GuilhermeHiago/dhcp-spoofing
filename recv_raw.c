@@ -14,7 +14,7 @@
 #define PROTO_UDP 17
 #define DST_PORT 8000
 
-void receive_dhcp_packetint dhcp_message_type, struct eth_frame_s *sockfd, uint8_t raw_buffer[ETH_LEN], struct eth_frame_s *raw);
+void receive_dhcp_packet(int dhcp_message_type, struct eth_frame_s *sockfd, uint8_t raw_buffer[ETH_LEN], struct eth_frame_s *raw);
 
 char bcast_mac[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 char dst_mac[6] = {0x00, 0x00, 0x00, 0x22, 0x22, 0x22};
