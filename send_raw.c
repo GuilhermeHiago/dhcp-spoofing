@@ -166,7 +166,7 @@ int main(int argc, char *argv[])
     /* To send data (in this case we will cook an ARP packet and broadcast it =])... */
 	/* fill the Ethernet frame header AFTER reading the discovery*/
 	memcpy(raw->ethernet.dst_addr, dst_mac, 6);
-	memcpy(raw->ethernet.src_addr, src_mac, 6); // ALTERAR SRC MAC
+	memcpy(raw->ethernet.src_addr, this_mac, 6); // ALTERAR SRC MAC
 	raw->ethernet.eth_type = htons(ETH_P_IP);
 
 
@@ -432,7 +432,8 @@ void send_dhcp_ack(struct dhcp_hdr_s *dhcp){
     inet_aton("0.0.0.0", &dhcp->giaddr);
 
     /* our hardware address */
-    memcpy(dhcp->chaddr, client_hardware_address, ETHERNET_HARDWARE_ADDRESS_LENGTH);
+    memcpy(dhcp->chaddr, dst_mac, ETHERNET_HARDWARE_ADDRESS_LENGTH);
+    //client_hardware_address, ETHERNET_HARDWARE_ADDRESS_LENGTH);
 
     /* first four bytes of options field is magic cookie (as per RFC 2132) */
     dhcp->options[0]='\x63';
