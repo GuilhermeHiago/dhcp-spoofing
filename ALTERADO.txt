@@ -24,6 +24,7 @@ void *getip();
 int get_hardware_address(int sock, char *interface_name);
 void send_dhcp_offer(struct dhcp_hdr_s *dhcp);
 void send_dhcp_ack(struct dhcp_hdr_s *dhcp);
+void receive_dhcp_packet(int dhcp_message_type, int sockfd, uint8_t raw_buffer[ETH_LEN], struct eth_frame_s *raw);
 
 u_int32_t packet_xid=0;
  
@@ -128,7 +129,7 @@ int main(int argc, char *argv[])
 	memcpy(this_mac, if_mac.ifr_hwaddr.sa_data, 6);
 
     get_hardware_address(sockfd, ifName);
-    printf("mac: %s", client_hardware_address);
+    // printf("mac: %s\n", client_hardware_address);
 
 	/* End of configuration. Now we can send data using raw sockets. */
 
@@ -154,7 +155,7 @@ int main(int argc, char *argv[])
 	raw->udp.udp_chksum = htons(0);
 
     /////////////////////////////////////////////////////
-    //// INIT LISTENER SOCKET
+    //// RECEIVE DHCP DISCOVER
     /////////////////////////////////////////////////////
     receive_dhcp_packet(DHCPDISCOVER, sock_listener, raw_buffer2, raw_listener);
     /////////////////////////////////////////////////////
@@ -168,7 +169,7 @@ int main(int argc, char *argv[])
 
 
     /////////////////////////////////////////////////////
-    //// INIT LISTENER SOCKET
+    //// SEND DHCP OFFER
     /////////////////////////////////////////////////////
 
     /* In truth this fill dhcp */
@@ -182,14 +183,14 @@ int main(int argc, char *argv[])
 
 
     /////////////////////////////////////////////////////
-    //// INIT LISTENER SOCKET
+    //// RECEIVE DHCPREQUEST
     /////////////////////////////////////////////////////
     receive_dhcp_packet(DHCPREQUEST, sock_listener, raw_buffer2, raw_listener);
     /////////////////////////////////////////////////////
 
 
     /////////////////////////////////////////////////////
-    //// INIT LISTENER SOCKET
+    //// SEND DHCP ACK
     /////////////////////////////////////////////////////
 
     /* clean */
@@ -401,8 +402,8 @@ void send_dhcp_ack(struct dhcp_hdr_s *dhcp){
     dhcp->hops=0;
 
     /* shold get the xid from CLIENT DISCOVER */
-    // packet_xid=client_xid;
-    dhcp->xid=client_xid;
+    packet_xid=client_xid;
+    // dhcp->xid=htonl(packet_xid);
 
     /**** WHAT THE HECK IS UP WITH THIS?!?  IF I DON'T MAKE THIS CALL, ONLY ONE SERVER RESPONSE IS PROCESSED!!!! ****/
     /* downright bizzarre... */
@@ -526,7 +527,7 @@ void send_dhcp_ack(struct dhcp_hdr_s *dhcp){
 
 
 
-void receive_dhcp_packet(int dhcp_message_type, struct eth_frame_s *sockfd, uint8_t raw_buffer[ETH_LEN], struct eth_frame_s *raw){
+void receive_dhcp_packet(int dhcp_message_type, int sockfd, uint8_t raw_buffer[ETH_LEN], struct eth_frame_s *raw){
 
     while (1){
         int numbytes = recvfrom(sockfd, raw_buffer, ETH_LEN, 0, NULL, NULL);
@@ -560,7 +561,7 @@ void receive_dhcp_packet(int dhcp_message_type, struct eth_frame_s *sockfd, uint
                         memcpy(client_hardware_address, dhcp->chaddr, 6);
                         memcpy(dst_mac, dhcp->chaddr, 6);
                         client_xid = dhcp->xid;
-                        printf("get xid: %d", client_xid);
+                        printf("get xid: %d\n", client_xid);
                         // memcpy(dst_mac, raw->ethernet.src_addr, 6);
                     }
 
@@ -630,7 +631,7 @@ void *getip(){
 					exit(EXIT_FAILURE);
 				}
 			
-				printf("address: %s", host);
+				printf("address: %s\n", host);
 			}
 			printf("\n");
 		}
