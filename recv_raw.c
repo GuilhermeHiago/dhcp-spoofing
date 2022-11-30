@@ -25,7 +25,9 @@ int main(int argc, char *argv[])
     int sockfd, numbytes;
     char *p;
     uint8_t raw_buffer[ETH_LEN];
+    bzero(raw_buffer, ETH_LEN);
     struct eth_frame_s *raw = (struct eth_frame_s *)&raw_buffer;
+
     /* Get interface name */
     if (argc > 1)
         strcpy(ifName, argv[1]);
@@ -58,6 +60,7 @@ int main(int argc, char *argv[])
                     if(dhcp->op == 1)printf("eh DHCP request\n");
 
                     printf("op type: %d\n", raw->dhcp.op);
+                    printf("msg type type: %d\n", raw->dhcp.options[6]);
 
                     printf("IP packet, %d bytes - src ip: %d.%d.%d.%d dst ip: %d.%d.%d.%d proto: %d\n",
                         numbytes,
