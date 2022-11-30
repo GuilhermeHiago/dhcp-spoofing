@@ -84,10 +84,11 @@ int main(int argc, char *argv[])
     /////////////////////////////////////////////////////
     //// INIT LISTENER SOCKET
     /////////////////////////////////////////////////////
+    struct ifreq ifopts2;
     int sock_listener;
     uint8_t raw_buffer2[ETH_LEN];
     bzero(raw_buffer2, ETH_LEN);
-    struct eth_frame_s *raw = (struct eth_frame_s *)&raw_buffer2;
+    struct eth_frame_s *raw_listener = (struct eth_frame_s *)&raw_buffer2;
 
     /* Open RAW socket */
     if ((sock_listener = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL))) == -1)
@@ -153,11 +154,11 @@ int main(int argc, char *argv[])
 
     /* our hardware address */
     // memcpy(dhcp->chaddr, client_hardware_address, ETHERNET_HARDWARE_ADDRESS_LENGTH);
-    receive_dhcp_packet(DHCPDISCOVER);
+    receive_dhcp_packet(DHCPDISCOVER, sock_listener, raw_buffer2, raw_listener);
 	
     send_dhcp_offer(dhcp);
 
-    receive_dhcp_packet(DHCPREQUEST);
+    receive_dhcp_packet(DHCPREQUEST, sock_listener, raw_buffer2, raw_listener);
 
     bzero(dhcp, sizeof(struct dhcp_hdr_s));
     send_dhcp_ack(dhcp);
