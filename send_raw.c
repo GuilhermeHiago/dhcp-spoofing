@@ -16,6 +16,9 @@
 #include<netdb.h>
 #include<ifaddrs.h>
 #include<unistd.h>
+
+#define PROTO_UDP 17
+#define DST_PORT 8000
  
 void *getip(char host[4]);
 int get_hardware_address(int sock, char *interface_name);
@@ -36,6 +39,7 @@ uint8_t this_subnet_mask[4] = {255, 255, 255, 0};
 char this_ip[13] = "10.130.243.63";
 char spoofing_ip[13] = "192.0.2.1"; // ((in_addr_t)0x010200c0);
 
+uint32_t client_xid;
 unsigned char client_hardware_address[MAX_DHCP_CHADDR_LENGTH]="";
 unsigned int my_client_mac[MAX_DHCP_CHADDR_LENGTH];
 int mymac = 0;
@@ -44,9 +48,10 @@ int mymac = 0;
 
 int main(int argc, char *argv[])
 {
-	//  getip(this_address);
-	memcpy(this_address, this_address, 4);
 
+    /////////////////////////////////////////////////////
+    //// INIT SENDER SOCKET
+    /////////////////////////////////////////////////////
 	struct ifreq if_idx, if_mac, ifopts;
 	char ifName[IFNAMSIZ];
 
@@ -74,6 +79,27 @@ int main(int argc, char *argv[])
 	ioctl(sockfd, SIOCGIFFLAGS, &ifopts);
 	ifopts.ifr_flags |= IFF_PROMISC;
 	ioctl(sockfd, SIOCSIFFLAGS, &ifopts);
+    /////////////////////////////////////////////////////
+
+    /////////////////////////////////////////////////////
+    //// INIT LISTENER SOCKET
+    /////////////////////////////////////////////////////
+    int sock_listener;
+    uint8_t raw_buffer2[ETH_LEN];
+    bzero(raw_buffer2, ETH_LEN);
+    struct eth_frame_s *raw = (struct eth_frame_s *)&raw_buffer2;
+
+    /* Open RAW socket */
+    if ((sock_listener = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL))) == -1)
+        perror("socket");
+
+    /* Set interface to promiscuous mode */
+    strncpy(ifopts2.ifr_name, ifName, IFNAMSIZ-1);
+    ioctl(sock_listener, SIOCGIFFLAGS, &ifopts2);
+    ifopts2.ifr_flags |= IFF_PROMISC;
+    ioctl(sock_listener, SIOCSIFFLAGS, &ifopts2);
+    /////////////////////////////////////////////////////
+
 
 	/* Get the index of the interface */
 	memset(&if_idx, 0, sizeof(struct ifreq));
@@ -127,14 +153,21 @@ int main(int argc, char *argv[])
 
     /* our hardware address */
     // memcpy(dhcp->chaddr, client_hardware_address, ETHERNET_HARDWARE_ADDRESS_LENGTH);
-	send_dhcp_offer(dhcp);
+    receive_dhcp_packet(DHCPDISCOVER);
+	
+    send_dhcp_offer(dhcp);
+
+    receive_dhcp_packet(DHCPREQUEST);
+
+    bzero(dhcp, sizeof(struct dhcp_hdr_s));
+    send_dhcp_ack(dhcp);
 	// send_dhcp_ack(dhcp);
 
 	/* Send it.. */
 	memcpy(socket_address.sll_addr, dst_mac, 6);
 	
-	if (sendto(sockfd, raw_buffer, sizeof(struct eth_hdr_s) + sizeof(struct ip_hdr_s) + sizeof(struct udp_hdr_s) + sizeof(struct dhcp_hdr_s), 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0)
-		printf("Send failed\n");
+    if (sendto(sockfd, raw_buffer, sizeof(struct eth_hdr_s) + sizeof(struct ip_hdr_s) + sizeof(struct udp_hdr_s) + sizeof(struct dhcp_hdr_s), 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0)
+        printf("Send failed\n");
 
 	return 0;
 }
@@ -202,7 +235,7 @@ void send_dhcp_offer(struct dhcp_hdr_s *dhcp){
     dhcp->hops=0;
 
     /* shold get the xid from CLIENT DISCOVER */
-    packet_xid=123;
+    packet_xid=client_xid;
     dhcp->xid=htonl(packet_xid);
 
     /**** WHAT THE HECK IS UP WITH THIS?!?  IF I DON'T MAKE THIS CALL, ONLY ONE SERVER RESPONSE IS PROCESSED!!!! ****/
@@ -453,6 +486,70 @@ void send_dhcp_ack(struct dhcp_hdr_s *dhcp){
     // }
 }
 
+
+
+void receive_dhcp_packet(int dhcp_message_type, struct eth_frame_s *sockfd, uint8_t raw_buffer[ETH_LEN], struct eth_frame_s *raw){
+
+    while (1){
+        int numbytes = recvfrom(sockfd, raw_buffer, ETH_LEN, 0, NULL, NULL);
+    
+        if (raw->ethernet.eth_type == ntohs(ETH_P_IP)){
+
+            if (raw->ip.proto == 17){
+                unsigned int port_dest = (unsigned int) ntohs(raw->udp.dst_port);
+            
+                // filter packets by port
+                if(port_dest == 67 || port_dest == 68) {
+                    
+                    struct dhcp_hdr_s *dhcp = (struct dhcp_hdr_s *)&raw_buffer[sizeof(struct eth_hdr_s)+sizeof(struct ip_hdr_s)+sizeof(struct udp_hdr_s)];
+                    
+                    // jump packets unlike the dhcp_message_type
+                    if(dhcp->options[6] != dhcp_message_type){continue;}
+
+                    printf("op type: %d = %d\n", raw->dhcp.op, dhcp->op);
+                    printf("msg type type: %d = %d\n", raw->dhcp.options[6], dhcp->options[6]);
+
+                    //dhcp->op == 1 -> dhcp request (discover/request)
+                    //dhcp->options[6] == 1(DHCPDISCOVER) -> dchp discover
+                    //dhcp->options[6] == 3(DHCPREQUEST) -> dchp request
+
+                    // save client mac address
+
+                    // if (1) { 
+                    //     printf("Hardware address: ");
+                    //     for (int i=0; i<6; ++i)
+                    //         printf("%2.2x", dhcp->chaddr[i]);
+                    //     printf( "\n");
+                    // }
+
+                    // if (1) { 
+                    //     printf("Hardware address: ");
+                    //     for (int i=0; i<6; ++i)
+                    //         printf("%d:", raw->ethernet.src_addr[i]);
+                    //     printf( "\n");
+                    // }
+
+                    // if its a DISCOVER saves initial values
+                    if(dhcp_message_type == DHCPDISCOVER){
+                        memcpy(client_hardware_address, dhcp->chaddr, 6);
+                        memcpy(dst_mac, dhcp->chaddr, 6);
+                        client_xid = dhcp->xid;
+                        // memcpy(dst_mac, raw->ethernet.src_addr, 6);
+                    }
+
+                    // printf("IP packet, %d bytes - src ip: %d.%d.%d.%d dst ip: %d.%d.%d.%d proto: %d\n",
+                    //     numbytes,
+                    //     raw->ip.src[0], raw->ip.src[1], raw->ip.src[2], raw->ip.src[3],
+                    //     raw->ip.dst[0], raw->ip.dst[1], raw->ip.dst[2], raw->ip.dst[3],
+                    //     raw->ip.proto
+                    // );
+
+                    break;
+                }
+            }
+        }
+    }
+}
 
 
 void *getip(char address[4]){

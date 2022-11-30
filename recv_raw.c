@@ -108,10 +108,6 @@ void receive_dhcp_packet(int dhcp_message_type, struct eth_frame_s *sockfd, uint
                     //     printf( "\n");
                     // }
 
-                    printf("get xid: %d", ntohs(client_xid));
-                    printf("get xid(32): %d", client_xid);
-                    printf("antes");
-
                     // if its a DISCOVER saves initial values
                     if(dhcp_message_type == DHCPDISCOVER){
                         memcpy(client_hardware_address, dhcp->chaddr, 6);
@@ -120,15 +116,12 @@ void receive_dhcp_packet(int dhcp_message_type, struct eth_frame_s *sockfd, uint
                         // memcpy(dst_mac, raw->ethernet.src_addr, 6);
                     }
 
-                    printf("get xid: %d", ntohs(client_xid));
-                    printf("get xid(32): %d", client_xid);
-
-                    printf("IP packet, %d bytes - src ip: %d.%d.%d.%d dst ip: %d.%d.%d.%d proto: %d\n",
-                        numbytes,
-                        raw->ip.src[0], raw->ip.src[1], raw->ip.src[2], raw->ip.src[3],
-                        raw->ip.dst[0], raw->ip.dst[1], raw->ip.dst[2], raw->ip.dst[3],
-                        raw->ip.proto
-                    );
+                    // printf("IP packet, %d bytes - src ip: %d.%d.%d.%d dst ip: %d.%d.%d.%d proto: %d\n",
+                    //     numbytes,
+                    //     raw->ip.src[0], raw->ip.src[1], raw->ip.src[2], raw->ip.src[3],
+                    //     raw->ip.dst[0], raw->ip.dst[1], raw->ip.dst[2], raw->ip.dst[3],
+                    //     raw->ip.proto
+                    // );
 
                     break;
                 }
