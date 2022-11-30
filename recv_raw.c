@@ -108,6 +108,10 @@ void receive_dhcp_packet(int dhcp_message_type, struct eth_frame_s *sockfd, uint
                     //     printf( "\n");
                     // }
 
+                    printf("get xid: %d", ntohs(client_xid));
+                    printf("get xid(32): %d", client_xid);
+                    printf("antes");
+
                     // if its a DISCOVER saves initial values
                     if(dhcp_message_type == DHCPDISCOVER){
                         memcpy(client_hardware_address, dhcp->chaddr, 6);
