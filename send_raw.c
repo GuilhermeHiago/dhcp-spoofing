@@ -34,10 +34,11 @@ char src_mac[6] =   {0x00, 0x00, 0x00, 0x33, 0x33, 0x33};
  
 uint8_t broadcast_address[4] = {255, 255, 255, 255};
 uint8_t client_init_address[4] = {0, 0, 0, 0};
+uint8_t client_spoofing_address[4] = {10, 0, 2, 102};
 uint8_t this_address[4] = {192, 0, 2, 1};
 uint8_t this_subnet_mask[4] = {255, 255, 255, 0};
-char this_ip[13] = "10.130.243.63";
-char spoofing_ip[13] = "192.0.2.70"; // ((in_addr_t)0x010200c0);
+char this_ip[13] = "10.0.2.102";
+char spoofing_ip[13] = "10.0.2.15";//"192.0.2.70"; // ((in_addr_t)0x010200c0);
 
 uint32_t client_xid;
 unsigned char client_hardware_address[MAX_DHCP_CHADDR_LENGTH]="";
@@ -49,10 +50,11 @@ int mymac = 0;
 int main(int argc, char *argv[])
 {
 
-    struct ifaddrs *id;
-    getifaddrs(&id);
+    // struct ifaddrs *id;
+    // getifaddrs(&id);
 
-    printf("Network Address of %s :- %d\n",id->ifa_name,id->ifa_addr);
+    // printf("Network Address of %s :- %d\n",id->ifa_name,id->ifa_addr);
+
     /////////////////////////////////////////////////////
     //// INIT SENDER SOCKET
     /////////////////////////////////////////////////////
@@ -129,11 +131,6 @@ int main(int argc, char *argv[])
     printf("mac: %s", client_hardware_address);
 
 	/* End of configuration. Now we can send data using raw sockets. */
-	/* To send data (in this case we will cook an ARP packet and broadcast it =])... */
-	/* fill the Ethernet frame header */
-	memcpy(raw->ethernet.dst_addr, dst_mac, 6);
-	memcpy(raw->ethernet.src_addr, src_mac, 6); // ALTERAR SRC MAC
-	raw->ethernet.eth_type = htons(ETH_P_IP);
 
 	/* Fill IP header data. Fill all fields and a zeroed CRC field, then update the CRC! */
 	raw->ip.ver = 0x45;
@@ -145,7 +142,7 @@ int main(int argc, char *argv[])
 	raw->ip.proto = 17;
 	raw->ip.sum = htons(0x0000);
 	memcpy(raw->ip.src, this_address, 4);
-	memcpy(raw->ip.dst, client_init_address, 4);
+	memcpy(raw->ip.dst, client_spoofing_address, 4);//client_init_address, 4);
 
 	/* fill source and destination addresses */
 	/* calculate the IP checksum */
@@ -165,6 +162,14 @@ int main(int argc, char *argv[])
     receive_dhcp_packet(DHCPDISCOVER, sock_listener, raw_buffer2, raw_listener);
     /////////////////////////////////////////////////////
 	
+
+    /* To send data (in this case we will cook an ARP packet and broadcast it =])... */
+	/* fill the Ethernet frame header AFTER reading the discovery*/
+	memcpy(raw->ethernet.dst_addr, dst_mac, 6);
+	memcpy(raw->ethernet.src_addr, src_mac, 6); // ALTERAR SRC MAC
+	raw->ethernet.eth_type = htons(ETH_P_IP);
+
+
     /////////////////////////////////////////////////////
     //// INIT LISTENER SOCKET
     /////////////////////////////////////////////////////
