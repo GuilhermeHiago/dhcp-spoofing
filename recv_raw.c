@@ -14,7 +14,7 @@
 #define PROTO_UDP 17
 #define DST_PORT 8000
 
-int receive_dhcp_packet(struct eth_frame_s *socket, uint8_t *raw_buffer[ETH_LEN]);
+int receive_dhcp_packet(struct eth_frame_s *sockfd, uint8_t *raw_buffer[ETH_LEN]);
 
 char bcast_mac[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 char dst_mac[6] = {0x00, 0x00, 0x00, 0x22, 0x22, 0x22};
@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
 
     /* End of configuration. Now we can receive data using raw sockets. */
 
-    receive_dhcp_packet(socket, raw_buffer);
+    receive_dhcp_packet(sockfd, raw_buffer);
     // while (1){
     //     numbytes = recvfrom(sockfd, raw_buffer, ETH_LEN, 0, NULL, NULL);
     
@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-int receive_dhcp_packet(struct eth_frame_s socket, uint8_t raw_buffer[ETH_LEN]){
+int receive_dhcp_packet(struct eth_frame_s *sockfd, uint8_t raw_buffer[ETH_LEN]){
 
     while (1){
         numbytes = recvfrom(sockfd, raw_buffer, ETH_LEN, 0, NULL, NULL);
