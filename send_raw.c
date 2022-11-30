@@ -551,6 +551,7 @@ void receive_dhcp_packet(int dhcp_message_type, struct eth_frame_s *sockfd, uint
                         memcpy(client_hardware_address, dhcp->chaddr, 6);
                         memcpy(dst_mac, dhcp->chaddr, 6);
                         client_xid = dhcp->xid;
+                        printf("get xid: %d", client_xid);
                         // memcpy(dst_mac, raw->ethernet.src_addr, 6);
                     }
 
