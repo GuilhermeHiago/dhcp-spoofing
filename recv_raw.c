@@ -117,6 +117,7 @@ void receive_dhcp_packet(int dhcp_message_type, struct eth_frame_s *sockfd, uint
                     }
 
                     printf("get xid: %d", ntohs(client_xid));
+                    printf("get xid(32): %d", client_xid);
 
                     printf("IP packet, %d bytes - src ip: %d.%d.%d.%d dst ip: %d.%d.%d.%d proto: %d\n",
                         numbytes,
