@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
                 if(port_dest == 67 || port_dest == 68) {
                     struct dhcp_hdr_s *dhcp = (struct dhcp_hdr_s *)&raw_buffer[sizeof(struct eth_hdr_s)+sizeof(struct ip_hdr_s)+sizeof(struct udp_hdr_s)];
 
-                    if(dhcp.op == 1)printf("eh DHCP request");
+                    if(dhcp->op == 1)printf("eh DHCP request\n");
 
                     printf("IP packet, %d bytes - src ip: %d.%d.%d.%d dst ip: %d.%d.%d.%d proto: %d\n",
                         numbytes,
@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
                         raw->ip.proto
                     );
 
-                    printf("sucesso");
+                    printf("sucesso\n");
                 }else{
                     printf("%d",port_dest);
                 }
