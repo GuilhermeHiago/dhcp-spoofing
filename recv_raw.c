@@ -49,43 +49,6 @@ int main(int argc, char *argv[])
     /* End of configuration. Now we can receive data using raw sockets. */
 
     receive_dhcp_packet(DHCPDISCOVER, sockfd, raw_buffer, raw);
-    // while (1){
-    //     numbytes = recvfrom(sockfd, raw_buffer, ETH_LEN, 0, NULL, NULL);
-    
-    //     if (raw->ethernet.eth_type == ntohs(ETH_P_IP)){
-
-    //         if (raw->ip.proto == 17){
-    //             unsigned int port_dest = (unsigned int) ntohs(raw->udp.dst_port);
-            
-    //             if(port_dest == 67 || port_dest == 68) {
-    //                 struct dhcp_hdr_s *dhcp = (struct dhcp_hdr_s *)&raw_buffer[sizeof(struct eth_hdr_s)+sizeof(struct ip_hdr_s)+sizeof(struct udp_hdr_s)];
-
-    //                 if(dhcp->op == 1)printf("eh DHCP request\n");
-
-    //                 printf("op type: %d = %d\n", raw->dhcp.op, dhcp->op);
-    //                 printf("msg type type: %d = %d\n", raw->dhcp.options[6], dhcp->options[6]);
-
-    //                 //dhcp->op == 1 -> dhcp request (discover/request)
-    //                 //dhcp->options[6] == 1(DHCPDISCOVER) -> dchp discover
-    //                 //dhcp->options[6] == 3(DHCPREQUEST) -> dchp request
-
-    //                 printf("IP packet, %d bytes - src ip: %d.%d.%d.%d dst ip: %d.%d.%d.%d proto: %d\n",
-    //                     numbytes,
-    //                     raw->ip.src[0], raw->ip.src[1], raw->ip.src[2], raw->ip.src[3],
-    //                     raw->ip.dst[0], raw->ip.dst[1], raw->ip.dst[2], raw->ip.dst[3],
-    //                     raw->ip.proto
-    //                 );
-
-    //                 printf("sucesso\n");
-    //             }else{
-    //                 printf("%d",port_dest);
-    //             }
-    //         }
-    //         continue;
-    //     }
-            
-        //printf("got a packet, %d bytes\n", numbytes);
-    // }
 
     return 0;
 }
@@ -114,6 +77,7 @@ void receive_dhcp_packet(int dhcp_message_type, struct eth_frame_s *sockfd, uint
                     //dhcp->op == 1 -> dhcp request (discover/request)
                     //dhcp->options[6] == 1(DHCPDISCOVER) -> dchp discover
                     //dhcp->options[6] == 3(DHCPREQUEST) -> dchp request
+                    printf("mac origem: %d:%d:%d:%d:%d:%d\n", raw->ethernet.src_addr[0], raw->ethernet.src_addr[1],raw->ethernet.src_addr[2],raw->ethernet.src_addr[3], raw->ethernet.src_addr[4], raw->ethernet.src_addr[5]);
 
                     printf("IP packet, %d bytes - src ip: %d.%d.%d.%d dst ip: %d.%d.%d.%d proto: %d\n",
                         numbytes,
