@@ -49,7 +49,12 @@ int mymac = 0;
 int main(int argc, char *argv[])
 {
 
-    getip();
+    struct ifaddrs *id;
+    getifaddrs(&id);
+
+    printf("Network Address of %s :- %d\n",id->ifa_name,id->ifa_addr);
+    inet_ntoa(id, &this_ip)
+    printf("IP: %d", this_ip);
     /////////////////////////////////////////////////////
     //// INIT SENDER SOCKET
     /////////////////////////////////////////////////////
