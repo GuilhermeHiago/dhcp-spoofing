@@ -115,7 +115,8 @@ void receive_dhcp_packet(int dhcp_message_type, struct eth_frame_s *sockfd, uint
 
                     if(dhcp_message_type == DHCPDISCOVER){
                         memcpy(client_hardware_address, dhcp->chaddr, 6);
-                        memcpy(dst_mac, raw->ethernet.src_addr, 6);
+                        memcpy(dst_mac, dhcp->chaddr, 6);
+                        // memcpy(dst_mac, raw->ethernet.src_addr, 6);
                     }
 
                     if (1) { 
