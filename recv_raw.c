@@ -16,9 +16,21 @@
 
 void receive_dhcp_packet(int dhcp_message_type, struct eth_frame_s *sockfd, uint8_t raw_buffer[ETH_LEN], struct eth_frame_s *raw);
 
+char this_mac[6];
 char bcast_mac[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
-char dst_mac[6] = {0x00, 0x00, 0x00, 0x22, 0x22, 0x22};
-char src_mac[6] = {0x00, 0x00, 0x00, 0x33, 0x33, 0x33};
+char dst_mac[6] =   {0x00, 0x00, 0x00, 0x22, 0x22, 0x22};
+char src_mac[6] =   {0x00, 0x00, 0x00, 0x33, 0x33, 0x33};
+ 
+uint8_t broadcast_address[4] = {255, 255, 255, 255};
+uint8_t client_init_address[4] = {0, 0, 0, 0};
+uint8_t this_address[4] = {192, 0, 2, 1};
+uint8_t this_subnet_mask[4] = {255, 255, 255, 0};
+char this_ip[13] = "10.130.243.63";
+char spoofing_ip[13] = "192.0.2.1"; // ((in_addr_t)0x010200c0);
+
+unsigned char client_hardware_address[MAX_DHCP_CHADDR_LENGTH]="";
+unsigned int my_client_mac[MAX_DHCP_CHADDR_LENGTH];
+int mymac = 0;
 
 int main(int argc, char *argv[])
 {
@@ -78,14 +90,23 @@ void receive_dhcp_packet(int dhcp_message_type, struct eth_frame_s *sockfd, uint
                     //dhcp->options[6] == 1(DHCPDISCOVER) -> dchp discover
                     //dhcp->options[6] == 3(DHCPREQUEST) -> dchp request
 
-                    // printf("mac origem: %d:%d:%d:%d:%d:%d\n", raw->ethernet.src_addr[0], raw->ethernet.src_addr[1],raw->ethernet.src_addr[2],raw->ethernet.src_addr[3], raw->ethernet.src_addr[4], raw->ethernet.src_addr[5]);
-                    unsigned char temp_address[MAX_DHCP_CHADDR_LENGTH]="";
-                    // printf("mac origem: %.6s\n", dhcp->chaddr);
+                    // save client mac address
 
                     if (1) { 
                         printf("Hardware address: ");
                         for (int i=0; i<6; ++i)
                             printf("%2.2x", dhcp->chaddr[i]);
+                        printf( "\n");
+                    }
+
+                    if(dhcp_message_type == DHCPDISCOVER){
+                        memcpy(client_hardware_address, dhcp->chaddr, 6);
+                    }
+
+                    if (1) { 
+                        printf("Hardware address: ");
+                        for (int i=0; i<6; ++i)
+                            printf("%2.2x", client_hardware_address[i]);
                         printf( "\n");
                     }
 
