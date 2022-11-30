@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
 
     /* End of configuration. Now we can receive data using raw sockets. */
 
-    receive_dhcp_packet(sockfd, raw_buffer, raw);
+    receive_dhcp_packet(DHCPDISCOVER, sockfd, raw_buffer, raw);
     // while (1){
     //     numbytes = recvfrom(sockfd, raw_buffer, ETH_LEN, 0, NULL, NULL);
     
