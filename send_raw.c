@@ -37,7 +37,7 @@ uint8_t client_init_address[4] = {0, 0, 0, 0};
 uint8_t this_address[4] = {192, 0, 2, 1};
 uint8_t this_subnet_mask[4] = {255, 255, 255, 0};
 char this_ip[13] = "10.130.243.63";
-char spoofing_ip[13] = "192.0.2.1"; // ((in_addr_t)0x010200c0);
+char spoofing_ip[13] = "192.0.2.70"; // ((in_addr_t)0x010200c0);
 
 uint32_t client_xid;
 unsigned char client_hardware_address[MAX_DHCP_CHADDR_LENGTH]="";
@@ -127,8 +127,8 @@ int main(int argc, char *argv[])
 	/* End of configuration. Now we can send data using raw sockets. */
 	/* To send data (in this case we will cook an ARP packet and broadcast it =])... */
 	/* fill the Ethernet frame header */
-	memcpy(raw->ethernet.dst_addr, bcast_mac, 6);
-	memcpy(raw->ethernet.src_addr, src_mac, 6);
+	memcpy(raw->ethernet.dst_addr, dst_mac, 6);
+	memcpy(raw->ethernet.src_addr, src_mac, 6); // ALTERAR SRC MAC
 	raw->ethernet.eth_type = htons(ETH_P_IP);
 
 	/* Fill IP header data. Fill all fields and a zeroed CRC field, then update the CRC! */
@@ -154,21 +154,49 @@ int main(int argc, char *argv[])
 
     /* our hardware address */
     // memcpy(dhcp->chaddr, client_hardware_address, ETHERNET_HARDWARE_ADDRESS_LENGTH);
+
+    /////////////////////////////////////////////////////
+    //// INIT LISTENER SOCKET
+    /////////////////////////////////////////////////////
     receive_dhcp_packet(DHCPDISCOVER, sock_listener, raw_buffer2, raw_listener);
+    /////////////////////////////////////////////////////
 	
+    /////////////////////////////////////////////////////
+    //// INIT LISTENER SOCKET
+    /////////////////////////////////////////////////////
+
+    /* In truth this fill dhcp */
     send_dhcp_offer(dhcp);
+    
+    /* Send it.. */
+    memcpy(socket_address.sll_addr, dst_mac, 6);
+    if (sendto(sockfd, raw_buffer, sizeof(struct eth_hdr_s) + sizeof(struct ip_hdr_s) + sizeof(struct udp_hdr_s) + sizeof(struct dhcp_hdr_s), 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0)
+        printf("Send failed\n");
+    /////////////////////////////////////////////////////
 
+
+    /////////////////////////////////////////////////////
+    //// INIT LISTENER SOCKET
+    /////////////////////////////////////////////////////
     receive_dhcp_packet(DHCPREQUEST, sock_listener, raw_buffer2, raw_listener);
+    /////////////////////////////////////////////////////
 
+
+    /////////////////////////////////////////////////////
+    //// INIT LISTENER SOCKET
+    /////////////////////////////////////////////////////
+
+    /* clean */
     bzero(dhcp, sizeof(struct dhcp_hdr_s));
+    /* In truth this fill dhcp */
     send_dhcp_ack(dhcp);
-	// send_dhcp_ack(dhcp);
-
-	/* Send it.. */
+	
+    /* Send it.. */
 	memcpy(socket_address.sll_addr, dst_mac, 6);
 	
     if (sendto(sockfd, raw_buffer, sizeof(struct eth_hdr_s) + sizeof(struct ip_hdr_s) + sizeof(struct udp_hdr_s) + sizeof(struct dhcp_hdr_s), 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0)
         printf("Send failed\n");
+    /////////////////////////////////////////////////////
 
 	return 0;
 }
@@ -507,26 +535,14 @@ void receive_dhcp_packet(int dhcp_message_type, struct eth_frame_s *sockfd, uint
                     // jump packets unlike the dhcp_message_type
                     if(dhcp->options[6] != dhcp_message_type){continue;}
 
-                    printf("op type: %d = %d\n", raw->dhcp.op, dhcp->op);
-                    printf("msg type type: %d = %d\n", raw->dhcp.options[6], dhcp->options[6]);
-
                     //dhcp->op == 1 -> dhcp request (discover/request)
                     //dhcp->options[6] == 1(DHCPDISCOVER) -> dchp discover
                     //dhcp->options[6] == 3(DHCPREQUEST) -> dchp request
-
-                    // save client mac address
 
                     // if (1) { 
                     //     printf("Hardware address: ");
                     //     for (int i=0; i<6; ++i)
                     //         printf("%2.2x", dhcp->chaddr[i]);
-                    //     printf( "\n");
-                    // }
-
-                    // if (1) { 
-                    //     printf("Hardware address: ");
-                    //     for (int i=0; i<6; ++i)
-                    //         printf("%d:", raw->ethernet.src_addr[i]);
                     //     printf( "\n");
                     // }
 
