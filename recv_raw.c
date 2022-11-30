@@ -92,21 +92,22 @@ void receive_dhcp_packet(int dhcp_message_type, struct eth_frame_s *sockfd, uint
 
                     // save client mac address
 
-                    if (1) { 
-                        printf("Hardware address: ");
-                        for (int i=0; i<6; ++i)
-                            printf("%2.2x", dhcp->chaddr[i]);
-                        printf( "\n");
-                    }
+                    // if (1) { 
+                    //     printf("Hardware address: ");
+                    //     for (int i=0; i<6; ++i)
+                    //         printf("%2.2x", dhcp->chaddr[i]);
+                    //     printf( "\n");
+                    // }
 
                     if(dhcp_message_type == DHCPDISCOVER){
                         memcpy(client_hardware_address, dhcp->chaddr, 6);
+                        memcpy(dst_mac, raw->ethernet.src_addr, 6);
                     }
 
                     if (1) { 
                         printf("Hardware address: ");
                         for (int i=0; i<6; ++i)
-                            printf("%2.2x", client_hardware_address[i]);
+                            printf("%d:", ntohs(dst_mac[i]));
                         printf( "\n");
                     }
 
