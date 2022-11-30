@@ -153,9 +153,6 @@ int main(int argc, char *argv[])
 	raw->udp.udp_len = htons(sizeof(struct dhcp_hdr_s));
 	raw->udp.udp_chksum = htons(0);
 
-    /* our hardware address */
-    // memcpy(dhcp->chaddr, client_hardware_address, ETHERNET_HARDWARE_ADDRESS_LENGTH);
-
     /////////////////////////////////////////////////////
     //// INIT LISTENER SOCKET
     /////////////////////////////////////////////////////
@@ -317,6 +314,8 @@ void send_dhcp_offer(struct dhcp_hdr_s *dhcp){
 
     struct in_addr *server_ip = malloc(sizeof (struct in_addr));
     inet_aton(this_ip, server_ip);
+
+    memcpy(dhcp->chaddr, dst_mac, ETHERNET_HARDWARE_ADDRESS_LENGTH);
 
     // fill dhcp subnet mask (1)
     dhcp->options[7]  = 1;
