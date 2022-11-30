@@ -53,13 +53,17 @@ int main(int argc, char *argv[])
                 unsigned int port_dest = (unsigned int) ntohs(raw->udp.dst_port);
             
                 if(port_dest == 67 || port_dest == 68) {
+                    struct dhcp_hdr_s *dhcp = (struct dhcp_hdr_s *)&raw_buffer[sizeof(struct eth_hdr_s)+sizeof(struct ip_hdr_s)+sizeof(struct udp_hdr_s)];
+
+                    if(dhcp.op == 1)printf("eh DHCP request");
+
                     printf("IP packet, %d bytes - src ip: %d.%d.%d.%d dst ip: %d.%d.%d.%d proto: %d\n",
                         numbytes,
                         raw->ip.src[0], raw->ip.src[1], raw->ip.src[2], raw->ip.src[3],
                         raw->ip.dst[0], raw->ip.dst[1], raw->ip.dst[2], raw->ip.dst[3],
                         raw->ip.proto
                     );
-                    
+
                     printf("sucesso");
                 }else{
                     printf("%d",port_dest);
