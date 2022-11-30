@@ -116,7 +116,7 @@ void receive_dhcp_packet(int dhcp_message_type, struct eth_frame_s *sockfd, uint
                         // memcpy(dst_mac, raw->ethernet.src_addr, 6);
                     }
 
-                    printf("get xid: ", ntohs(client_xid));
+                    printf("get xid: %d", ntohs(client_xid));
 
                     printf("IP packet, %d bytes - src ip: %d.%d.%d.%d dst ip: %d.%d.%d.%d proto: %d\n",
                         numbytes,
