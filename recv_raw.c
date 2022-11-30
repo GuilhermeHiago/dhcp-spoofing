@@ -107,7 +107,7 @@ void receive_dhcp_packet(int dhcp_message_type, struct eth_frame_s *sockfd, uint
                     if (1) { 
                         printf("Hardware address: ");
                         for (int i=0; i<6; ++i)
-                            printf("%d:", ntohs(dst_mac[i]));
+                            printf("%d:", dst_mac[i]);
                         printf( "\n");
                     }
 
