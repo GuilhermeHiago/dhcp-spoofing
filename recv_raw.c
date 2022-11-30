@@ -99,6 +99,20 @@ void receive_dhcp_packet(int dhcp_message_type, struct eth_frame_s *sockfd, uint
                     //     printf( "\n");
                     // }
 
+                    if (1) { 
+                        printf("Hardware address: ");
+                        for (int i=0; i<6; ++i)
+                            printf("%d:", raw->ethernet.src_addr[i]);
+                        printf( "\n");
+                    }
+
+                    if (1) { 
+                        printf("Hardware address: ");
+                        for (int i=0; i<6; ++i)
+                            printf("%d:", dst_mac[i]);
+                        printf( "\n");
+                    }
+
                     if(dhcp_message_type == DHCPDISCOVER){
                         memcpy(client_hardware_address, dhcp->chaddr, 6);
                         memcpy(dst_mac, raw->ethernet.src_addr, 6);
