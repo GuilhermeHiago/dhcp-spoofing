@@ -14,7 +14,7 @@
 #define PROTO_UDP 17
 #define DST_PORT 8000
 
-void receive_dhcp_packet(struct eth_frame_s *sockfd, uint8_t raw_buffer[ETH_LEN], struct eth_frame_s *raw);
+void receive_dhcp_packetint dhcp_message_type, struct eth_frame_s *sockfd, uint8_t raw_buffer[ETH_LEN], struct eth_frame_s *raw);
 
 char bcast_mac[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 char dst_mac[6] = {0x00, 0x00, 0x00, 0x22, 0x22, 0x22};
@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-void receive_dhcp_packet(struct eth_frame_s *sockfd, uint8_t raw_buffer[ETH_LEN], struct eth_frame_s *raw){
+void receive_dhcp_packet(int dhcp_message_type, struct eth_frame_s *sockfd, uint8_t raw_buffer[ETH_LEN], struct eth_frame_s *raw){
 
     while (1){
         int numbytes = recvfrom(sockfd, raw_buffer, ETH_LEN, 0, NULL, NULL);
@@ -100,7 +100,8 @@ void receive_dhcp_packet(struct eth_frame_s *sockfd, uint8_t raw_buffer[ETH_LEN]
             if (raw->ip.proto == 17){
                 unsigned int port_dest = (unsigned int) ntohs(raw->udp.dst_port);
             
-                if(port_dest == 67 || port_dest == 68) {
+                // filter packets by port and message type
+                if((port_dest == 67 || port_dest == 68) && dhcp->options[6] == dhcp_message_type) {
                     struct dhcp_hdr_s *dhcp = (struct dhcp_hdr_s *)&raw_buffer[sizeof(struct eth_hdr_s)+sizeof(struct ip_hdr_s)+sizeof(struct udp_hdr_s)];
 
                     if(dhcp->op == 1)printf("eh DHCP request\n");
@@ -119,7 +120,7 @@ void receive_dhcp_packet(struct eth_frame_s *sockfd, uint8_t raw_buffer[ETH_LEN]
                         raw->ip.proto
                     );
 
-                    // return 1;
+                    break;
                 }
             }
         }
