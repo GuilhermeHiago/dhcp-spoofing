@@ -84,7 +84,7 @@ void receive_dhcp_packet(int dhcp_message_type, struct eth_frame_s *sockfd, uint
 
                     if (1) { 
                         printf("Hardware address: ");
-                        for (i=0; i<6; ++i)
+                        for (int i=0; i<6; ++i)
                             printf("%2.2x", dhcp->chaddr[i]);
                         printf( "\n");
                     }
