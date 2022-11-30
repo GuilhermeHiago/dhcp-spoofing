@@ -20,7 +20,7 @@
 #define PROTO_UDP 17
 #define DST_PORT 8000
  
-void *getip(char host[4]);
+void *getip();
 int get_hardware_address(int sock, char *interface_name);
 void send_dhcp_offer(struct dhcp_hdr_s *dhcp);
 void send_dhcp_ack(struct dhcp_hdr_s *dhcp);
@@ -264,12 +264,12 @@ void send_dhcp_offer(struct dhcp_hdr_s *dhcp){
     dhcp->hops=0;
 
     /* shold get the xid from CLIENT DISCOVER */
-    packet_xid=client_xid;
-    dhcp->xid=htonl(packet_xid);
+    // packet_xid=client_xid;
+    dhcp->xid=client_xid;
 
     /**** WHAT THE HECK IS UP WITH THIS?!?  IF I DON'T MAKE THIS CALL, ONLY ONE SERVER RESPONSE IS PROCESSED!!!! ****/
     /* downright bizzarre... */
-    ntohl(dhcp->xid);
+    // ntohl(dhcp->xid);
 
     /*dhcp->secs=htons(65535);*/
     dhcp->secs=0xFF;
@@ -393,12 +393,12 @@ void send_dhcp_ack(struct dhcp_hdr_s *dhcp){
     dhcp->hops=0;
 
     /* shold get the xid from CLIENT DISCOVER */
-    packet_xid=123;
-    dhcp->xid=htonl(packet_xid);
+    packet_xid=client_xid;
+    // dhcp->xid=htonl(packet_xid);
 
     /**** WHAT THE HECK IS UP WITH THIS?!?  IF I DON'T MAKE THIS CALL, ONLY ONE SERVER RESPONSE IS PROCESSED!!!! ****/
     /* downright bizzarre... */
-    ntohl(dhcp->xid);
+    // ntohl(dhcp->xid);
 
     /*dhcp->secs=htons(65535);*/
     dhcp->secs=0xFF;
@@ -570,7 +570,7 @@ void receive_dhcp_packet(int dhcp_message_type, struct eth_frame_s *sockfd, uint
 }
 
 
-void *getip(char address[4]){
+void *getip(){
 	FILE *f;
 	char line[100] , *p , *c;
 	f = fopen("/proc/net/route" , "r");
