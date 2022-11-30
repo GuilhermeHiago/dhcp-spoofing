@@ -59,8 +59,8 @@ int main(int argc, char *argv[])
 
                     if(dhcp->op == 1)printf("eh DHCP request\n");
 
-                    printf("op type: %d\n", raw->dhcp.op);
-                    printf("msg type type: %d\n", raw->dhcp.options[6]);
+                    printf("op type: %d = %d\n", raw->dhcp.op, dhcp->op);
+                    printf("msg type type: %d = %d\n", raw->dhcp.options[6], dhcp->options[6]);
 
                     printf("IP packet, %d bytes - src ip: %d.%d.%d.%d dst ip: %d.%d.%d.%d proto: %d\n",
                         numbytes,
