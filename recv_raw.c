@@ -25,9 +25,11 @@ uint8_t broadcast_address[4] = {255, 255, 255, 255};
 uint8_t client_init_address[4] = {0, 0, 0, 0};
 uint8_t this_address[4] = {192, 0, 2, 1};
 uint8_t this_subnet_mask[4] = {255, 255, 255, 0};
+
 char this_ip[13] = "10.130.243.63";
 char spoofing_ip[13] = "192.0.2.1"; // ((in_addr_t)0x010200c0);
 
+uint32_t client_xid;
 unsigned char client_hardware_address[MAX_DHCP_CHADDR_LENGTH]="";
 unsigned int my_client_mac[MAX_DHCP_CHADDR_LENGTH];
 int mymac = 0;
@@ -99,32 +101,22 @@ void receive_dhcp_packet(int dhcp_message_type, struct eth_frame_s *sockfd, uint
                     //     printf( "\n");
                     // }
 
-                    if (1) { 
-                        printf("Hardware address: ");
-                        for (int i=0; i<6; ++i)
-                            printf("%d:", raw->ethernet.src_addr[i]);
-                        printf( "\n");
-                    }
+                    // if (1) { 
+                    //     printf("Hardware address: ");
+                    //     for (int i=0; i<6; ++i)
+                    //         printf("%d:", raw->ethernet.src_addr[i]);
+                    //     printf( "\n");
+                    // }
 
-                    if (1) { 
-                        printf("Hardware address: ");
-                        for (int i=0; i<6; ++i)
-                            printf("%d:", dst_mac[i]);
-                        printf( "\n");
-                    }
-
+                    // if its a DISCOVER saves initial values
                     if(dhcp_message_type == DHCPDISCOVER){
                         memcpy(client_hardware_address, dhcp->chaddr, 6);
                         memcpy(dst_mac, dhcp->chaddr, 6);
+                        client_xid = dhcp->xid;
                         // memcpy(dst_mac, raw->ethernet.src_addr, 6);
                     }
 
-                    if (1) { 
-                        printf("Hardware address: ");
-                        for (int i=0; i<6; ++i)
-                            printf("%d:", dst_mac[i]);
-                        printf( "\n");
-                    }
+                    printf("get xid: ", ntohs(client_xid));
 
                     printf("IP packet, %d bytes - src ip: %d.%d.%d.%d dst ip: %d.%d.%d.%d proto: %d\n",
                         numbytes,
